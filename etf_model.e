@@ -35,6 +35,8 @@ feature {NONE} -- Initialization
 			create destination.make (new_coordinate)
 			create s_d_edge.make (destination, source)
 			game_won := false
+			game_in_progress := false
+			aborted := false
 			errors := 0
 
 
@@ -64,6 +66,7 @@ feature -- model attributes
 	game_won: BOOLEAN
 	score_earned: INTEGER
 	errors: INTEGER
+	game_in_progress: BOOLEAN
 
 
 
@@ -83,11 +86,18 @@ feature -- model operations
 
 	abort
 		do
+			if game_in_progress ~ true then
 			aborted := true
+			i := i+1
+			else
+			errors := 4
+			i := i + 1
+			end
 		end
 
 	new_game(level: INTEGER_32)
 		do
+			if game_in_progress ~ false then
 			create maze_generator.make
 			maze_graph := maze_generator.generate_new_maze (level)
 			create maze_drawer.make (maze_graph)
@@ -106,11 +116,20 @@ feature -- model operations
 				score_earned := 3
 				total_possible_score := total_possible_score + 3
 			end
+			game_in_progress := true
+			else
+				i := i + 1
+				errors := 3
+			end
 
 		end
 
 	move(direction: TUPLE[row: INTEGER; col: INTEGER])
 		do
+
+		if game_in_progress ~ true then
+
+
 			i := i + 1
 
 			create new_coordinate.make ([current_row + direction.row, current_col + direction.col])
@@ -132,6 +151,10 @@ feature -- model operations
 
 
 			end
+		else
+			errors := 2
+			i := i + 1
+		end
 
 
 
@@ -151,15 +174,34 @@ feature -- queries
 		do
 			create Result.make_from_string ("")
 
-			if i = 0 or aborted then
+			if i = 0 or (aborted ~ true and game_in_progress ~ true) then
 				Result.append ("  State: ")
 				Result.append (i.out)
 				Result.append (" -> ok")
+				game_in_progress := false
+				aborted := false
 			end
 			if i > 0 and errors = 1 then
 				Result.append ("  State: ")
 				Result.append (i.out)
 				Result.append (" -> Error! Not a valid move.")
+				Result.append("%N  Game Number: ")
+				Result.append(game_number.out)
+				Result.append("%N  Score: ")
+				Result.append (score.out)
+				Result.append (" / ")
+				Result.append (total_possible_score.out)
+				Result.append ("%N")
+			end
+			if (i >0 and errors = 2) or errors = 4 then
+				Result.append ("  State: ")
+				Result.append (i.out)
+				Result.append (" -> Error! Not in a game.")
+			end
+			if i > 0 and errors = 3 then
+				Result.append ("  State: ")
+				Result.append (i.out)
+				Result.append (" -> Error! In game already.")
 				Result.append("%N  Game Number: ")
 				Result.append(game_number.out)
 				Result.append("%N  Score: ")
@@ -195,8 +237,11 @@ feature -- queries
 				Result.append (total_possible_score.out)
 				Result.append ("%N")
 				game_won := false
+				game_in_progress := false
+				current_row := 0
+				current_col := 0
 			end
-
+			aborted := false
 			errors := 0
 --				Result.append(og_coordinate.row.out)
 --				Result.append(og_coordinate.col.out)
