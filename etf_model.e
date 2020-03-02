@@ -35,6 +35,7 @@ feature {NONE} -- Initialization
 			create destination.make (new_coordinate)
 			create s_d_edge.make (destination, source)
 			game_won := false
+			errors := 0
 
 
 			i := 0
@@ -62,6 +63,7 @@ feature -- model attributes
 
 	game_won: BOOLEAN
 	score_earned: INTEGER
+	errors: INTEGER
 
 
 
@@ -123,7 +125,11 @@ feature -- model operations
 				if current_row = maze_drawer.size and current_col = maze_drawer.size then
 					game_won := true
 					score := score_earned
+					errors := 0
 				end
+			else
+				errors := 1
+
 
 			end
 
@@ -150,16 +156,28 @@ feature -- queries
 				Result.append (i.out)
 				Result.append (" -> ok")
 			end
-			if i > 0 and game_won ~ false then
+			if i > 0 and errors = 1 then
+				Result.append ("  State: ")
+				Result.append (i.out)
+				Result.append (" -> Error! Not a valid move.")
+				Result.append("%N  Game Number: ")
+				Result.append(game_number.out)
+				Result.append("%N  Score: ")
+				Result.append (score.out)
+				Result.append (" / ")
+				Result.append (total_possible_score.out)
+				Result.append ("%N")
+			end
+			if i > 0 and game_won ~ false and errors = 0 then
 				Result.append ("  State: ")
 				Result.append (i.out)
 				Result.append (" -> ok")
 				Result.append(maze_drawer.out)
-				Result.append("  %N  Game Number: ")
+				Result.append("%N  Game Number: ")
 				Result.append(game_number.out)
-				Result.append("  %N  Score: ")
+				Result.append("%N  Score: ")
 				Result.append (score.out)
-				Result.append ("/")
+				Result.append (" / ")
 				Result.append (total_possible_score.out)
 				Result.append ("%N")
 			end
@@ -168,16 +186,18 @@ feature -- queries
 				Result.append (i.out)
 				Result.append (" -> ok")
 				Result.append(maze_drawer.out)
-				Result.append("  %N  Congratulations! You escaped the maze! ")
-				Result.append("  %N  Game Number: ")
+				Result.append("%N  Congratulations! You escaped the maze!")
+				Result.append("%N  Game Number: ")
 				Result.append(game_number.out)
-				Result.append("  %N  Score: ")
+				Result.append("%N  Score: ")
 				Result.append (score.out)
-				Result.append ("/")
+				Result.append (" / ")
 				Result.append (total_possible_score.out)
 				Result.append ("%N")
+				game_won := false
 			end
 
+			errors := 0
 --				Result.append(og_coordinate.row.out)
 --				Result.append(og_coordinate.col.out)
 --				Result.append(new_coordinate.row.out)
