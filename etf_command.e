@@ -1,8 +1,4 @@
-note
-	description: "The interface for an input COMMAND"
-	author: ""
-	date: "$Date$"
-	revision: "$Revision$"
+
 
 deferred class
 	ETF_COMMAND
