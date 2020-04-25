@@ -1,8 +1,3 @@
-note
-	description: ""
-	author: ""
-	date: "$Date$"
-	revision: "$Revision$"
 
 class
 	ETF_MOVE
